@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% block body_id %}{% endblock %}
+{% block main %}
+    {% include 'partials/blank_header.html' %}
+    <div class="container-fluid mt--7">
+        <!-- Dark table -->
+        <div class="row mt-5">
+            <div class="col">
+                <div class="card shadow">
+                    <div class="card-header border-0">
+                        <h3 class="float-sm-left mb-0">{{ title }}</h3>
+                        <a href="{% url 'salaryAddModal' %}" rel="modal:open"
+                           class="btn btn-sm btn-primary float-sm-right">Add New</a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table align-items-center">
+                            <thead class="">
+                            <tr>
+                                <th scope="col">Employee Name</th>
+                                <th scope="col">Email</th>
+                                <th scope="col">Salary Amount</th>
+                                <th scope="col">Action</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for foo in salaries %}
+                                {% if foo.user.is_staff == True and foo.user.is_active == True %}
+                                    <tr>
+                                        <th scope="row">
+                                            <a href="#"
+                                               class="text-dark">{{ foo.user.first_name }}&nbsp;{{ foo.user.last_name }}</a>
+                                        </th>
+                                        <td>
+                                            {{ foo.user.email }}
+                                        </td>
+                                        <td>
+                                            {{ foo.salary_amount }}
+                                        </td>
+
+                                        <td>
+                                            <a href="" rel="modal:open"
+                                               class="btn btn-sm btn-info"><i class="fa fa-pencil"></i></a>
+                                            <button class="btn btn-sm btn-danger"><i class="fa fa-trash"></i></button>
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+{% block js %}
+
+{% endblock %}

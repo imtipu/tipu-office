@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+{% load tags %}
+{% block body_id %}{% endblock %}
+{% block main %}
+    {#    {% get_attedence_status as get_attedence_status %}#}
+    {% now 'd' as this_day %}
+    {% now 'm' as this_month %}
+    {% now 'Y' as this_year %}
+    {% include 'partials/blank_header.html' %}
+    <div class="container-fluid mt--7">
+        <!-- Dark table -->
+        <div class="row mt-5">
+            <div class="col-md-6 col-sm-10 col-xs-12">
+                <div class="card shadow">
+                    <div class="card-header border-0">
+                        <h3 class="float-sm-left mb-0">{{ title }}-{{ user.id }} {{ this_year }}</h3>
+                    </div>
+                    <div class="table-responsive table-borderless">
+                        <table class="table align-items-center">
+                            <thead class="">
+                            <tr>
+                                <th scope="col">Date</th>
+                                <th scope="col">Status</th>
+                                <th scope="col">Action</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for foo in dates %}
+                                {% get_attedence_status user.id foo|add:"1" this_month this_year as data %}
+                                <tr class="{% if data.day == data.day_today %}table-active{% elif data.day > data.day_today %}d-none{% elif data.day < data.day_today %}table-light{% endif %}">
+                                    <td scope="row">
+                                        <a href="#"
+                                           class="text-dark">{% now 'Y-M' %}-{{ data.day }}</a>
+                                    </td>
+                                    <td>
+                                        {% if data.attendence.status != '' %}
+                                            {% if data.attendence.status == True %}
+                                                <span id="btn_attend_{{ foo|add:"1" }}"
+                                                      class="btn btn-success btn-sm">{{ data.attendence.status }}</span>
+                                            {% elif data.attendence.status == False %}
+                                                <span id="btn_attend_{{ foo|add:"1" }}"
+                                                      class="btn btn-dark btn-sm">{{ data.attendence.status }}</span>
+                                            {% else %}
+                                                <span id="btn_attend_{{ foo|add:"1" }}" class="btn btn-default btn-sm">Data not submitted</span>
+                                            {% endif %}
+                                        {% else %}
+
+                                            {% if data.day < data.day_today %}
+                                                <span id="btn_attend_{{ foo|add:"1" }}"
+                                                      class="btn btn-warning disabled btn-sm">None</span>
+                                            {% elif data.day == data.day_today %}
+                                                <span id="btn_attend_{{ foo|add:"1" }}" class="btn btn-warning btn-sm">Not updated</span>
+                                            {% else %}
+                                                <span id="btn_attend_{{ foo|add:"1" }}" class="btn disabled">N/A</span>
+                                            {% endif %}
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if foo|add:"1" <= data.day_today %}
+                                            <button type="button"
+                                                    onclick="changeAttendenceModal({{ user.id }},{{ data.day }},{{ data.month }},{{ data.year }},event)"
+                                                    class="btn btn-sm btn-info" data-toggle="modal"><i
+                                                    class="fa fa-pencil"></i>
+                                            </button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="modal fade" id="modal-change-attendence" tabindex="-1" role="dialog" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h2 class="modal-title" id="modal-title-default">Change Attendence Status</h2>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">×</span>
+                            </button>
+                        </div>
+
+                        <div class="modal-body">
+                            <form>
+                                <div class="hidden-inputs">
+
+                                </div>
+
+                                <div data-toggle="buttons">
+                                    <label class="btn btn-outline-primary">
+                                        <input type="radio" class="d-none status" id="statusTrue" name="status"
+                                               value="1" autocomplete="off">True
+                                    </label>
+                                    <label class="btn btn-outline-danger">
+                                        <input type="radio" class="d-none status" id="statusFalse" name="status"
+                                               value="0" autocomplete="off">False
+                                    </label>
+                                </div>
+
+                            </form>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" onclick="changeAttendenceStatus(event)" class="btn btn-primary">Save
+                                changes
+                            </button>
+                            <button type="button" class="btn btn-link  ml-auto" data-dismiss="modal">Close</button>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block js %}
+    <script>
+        function changeAttendenceModal(user, day, month, year, event) {
+            event.preventDefault();
+            $('#modal-change-attendence').modal('show');
+            $('#modal-change-attendence .modal-body form .hidden-inputs').html('' +
+                '<input type="hidden" id="user_id" value="' + user + '">\n' +
+                '<input type="hidden" id="day" value="' + day + '">\n' +
+                '<input type="hidden" id="month" value="' + month + '">\n' +
+                '<input type="hidden" id="year" value="' + year + '">');
+
+        }
+
+        function changeAttendenceStatus(event) {
+            event.preventDefault();
+            let user = $('#user_id').val();
+            let day = $('#day').val();
+            let month = $('#month').val();
+            let year = $('#year').val();
+            let status = $('input[name="status"]:checked').val();
+            if (status !== '') {
+                $.ajax({
+                    type: 'post',
+                    dataType: 'json',
+                    url: '{% url 'api_attendence_change' %}',
+                    data: {user: user, day: day, month: month, year: year, status: status},
+                    beforeSend: function (xhr, settings) {
+                        xhr.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');
+                    },
+                    success: function (data) {
+
+                        if (data.success == true) {
+                            console.log(data.status);
+                            if (data.status == true) {
+                                $('#btn_attend_' + day).removeClass('btn-dark btn-defualt').addClass('btn-success').html('True');
+                                $('#modal-change-attendence form')[0].reset();
+                                $('#modal-change-attendence form label').removeClass('active');
+                                $('#modal-change-attendence').modal('hide');
+                                $('#modal-change-attendence .modal-body form .hidden-inputs').html('');
+
+                            } else if (data.status == false) {
+                                $('#btn_attend_' + day).removeClass('btn-success btn-defualt').addClass('btn-dark').html('False');
+                                $('#modal-change-attendence form label').removeClass('active');
+                                $('#modal-change-attendence form')[0].reset();
+                                $('#modal-change-attendence').modal('hide');
+                                $('#modal-change-attendence .modal-body form .hidden-inputs').html('');
+                            }
+
+                        } else {
+                            alert(data.msg);
+                            $('#modal-change-attendence form label').removeClass('active');
+                            $('#modal-change-attendence form')[0].reset();
+                            $('#modal-change-attendence').modal('hide');
+                            $('#modal-change-attendence .modal-body form .hidden-inputs').html('');
+                        }
+                    }
+                })
+            }
+
+        }
+    </script>
+{% endblock %}

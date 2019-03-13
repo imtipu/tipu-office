@@ -1,0 +1,51 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="Office Management Software">
+    <meta name="author" content="Borhan Tipu">
+    <title>{% block title %}{{ title }}{% endblock %}</title>
+    <link href="{% static 'assets/img/brand/favicon.png' %}" rel="icon" type="image/png">
+    <link href="{% static 'assets/vendor/nucleo/css/nucleo.css' %}" rel="stylesheet">
+    <link href="{% static 'assets/vendor/@fortawesome/fontawesome-free/css/all.min.css' %}" rel="stylesheet">
+    <link href="{% static 'assets/vendor/font-awesome-4.7.0/css/font-awesome.min.css' %}" rel="stylesheet">
+    <link type="text/css" href="{% static 'plugin/swal2/sweetalert2.min.css' %}" rel="stylesheet">
+    {#    <link type="text/css" href="{% static 'plugin/jquerymodal/jquery.modal.css' %}" rel="stylesheet">#}
+    <!-- Argon CSS -->
+    <link type="text/css" href="{% static 'assets/css/argon.css' %}" rel="stylesheet">
+    <link type="text/css" href="{% static 'css/office.css' %}" rel="stylesheet">
+    <script src="{% static 'plugin/vue.js' %}"></script>
+    <script src="{% static 'plugin/axios.min.js' %}"></script>
+    <script src="{% static 'plugin/swal2/sweetalert2.all.min.js' %}"></script>
+
+
+    {% block css %}{% endblock %}
+</head>
+<body id="{% block body_id %}{% endblock %}">
+{% if request.user %}
+    {% include 'partials/sidebar.html' %}
+    <div class="main-content">
+        {% include 'partials/top_header.html' %}
+        {% block main %}
+        {% endblock %}
+        {% include 'partials/logout_modal.html' %}
+        {% include 'partials/footer.html' %}
+    </div>
+{% endif %}
+
+<script src="{% static 'assets/vendor/jquery/dist/jquery.min.js' %}"></script>
+<script src="{% static 'assets/vendor/bootstrap/dist/js/bootstrap.bundle.min.js' %}"></script>
+<!-- Argon JS -->
+{% url 'homepage' as homepage_url %}
+{% if request.get_full_path == homepage_url %}
+    <script src="{% static 'assets/vendor/chart.js/dist/Chart.min.js' %}"></script>
+    <script src="{% static 'assets/vendor/chart.js/dist/Chart.extension.js' %}"></script>
+{% endif %}
+
+{#<script src="{% static 'plugin/jquerymodal/jquery.modal.min.js' %}"></script>#}
+<script src="{% static 'assets/js/argon.js' %}"></script>
+{% block js %}{% endblock %}
+</body>
+</html>

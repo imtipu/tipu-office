@@ -1,0 +1,168 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="Office Management Software">
+    <meta name="author" content="Borhan Tipu">
+    <title>{% block title %}{{ title }}{% endblock %}</title>
+    <link href="{% static 'assets/img/brand/favicon.png' %}" rel="icon" type="image/png">
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet">
+    <!-- Icons -->
+    <link href="{% static 'assets/vendor/nucleo/css/nucleo.css' %}" rel="stylesheet">
+    <link href="{% static 'assets/vendor/@fortawesome/fontawesome-free/css/all.min.css' %}" rel="stylesheet">
+    <!-- Argon CSS -->
+    <link type="text/css" href="{% static 'assets/css/argon.css' %}" rel="stylesheet">
+    <link type="text/css" href="{% static 'css/office.css' %}" rel="stylesheet">
+    <script src="{% static 'plugin/vue.js' %}"></script>
+    <script src="{% static 'plugin/axios.min.js' %}"></script>
+    <script src="{% static 'plugin/swal2/sweetalert2.all.min.js' %}"></script>
+</head>
+<body>
+<div class="main-content">
+    <div class="header bg-gradient-primary py-4 py-lg-6">
+        <div class="container">
+            <div class="header-body text-center mb-7">
+                <div class="row justify-content-center">
+                    <div class="col-lg-5 col-md-6">
+                        <h1 class="text-white">Welcome!</h1>
+                        <h2 class="text-white">Office Management Tool!</h2>
+                        <p class="text-lead text-light">
+                            <span class="text-underline text-lg">DEMO</span><br>
+                            username: admin<br>
+                            password: admin123456
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="separator separator-bottom separator-skew zindex-100">
+            <svg x="0" y="0" viewBox="0 0 2560 100" preserveAspectRatio="none" version="1.1"
+                 xmlns="http://www.w3.org/2000/svg">
+                <polygon class="fill-default" points="2560 0 2560 100 0 100"></polygon>
+            </svg>
+        </div>
+    </div>
+    <!-- Page content -->
+    <div id="appLogin" class="container mt--8 pb-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-5 col-md-7">
+                <div class="card bg-secondary shadow border-0">
+                    <div class="card-header bg-transparent pb-5">
+                        <div class="text-muted text-center mt-2 mb-3"><h2>{{ request.user.username }}Sign in ${ data
+                            }</h2></div>
+                    </div>
+                    <div class="card-body px-lg-5 py-lg-5">
+                        <form @submit="adminLogin" role="form" method="post">
+                            {% csrf_token %}
+                            <div class="form-group mb-3">
+                                <div class="input-group input-group-alternative">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="ni ni-email-83"></i></span>
+                                    </div>
+                                    <input class="form-control" placeholder="username/email" type="text"
+                                           v-model="username" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="input-group input-group-alternative">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="ni ni-lock-circle-open"></i></span>
+                                    </div>
+                                    <input class="form-control" placeholder="Password" type="password"
+                                           v-model="password" required>
+                                </div>
+                            </div>
+                            <div class="custom-control custom-control-alternative custom-checkbox">
+                                <input class="custom-control-input" id=" customCheckLogin" type="checkbox">
+                                <label class="custom-control-label" for=" customCheckLogin">
+                                    <span class="text-muted">Remember me</span>
+                                </label>
+                            </div>
+                            <div class="text-center">
+                                <button type="submit" class="btn btn-primary my-4">Sign in</button>
+                                <button type="button" class="btn btn-primary my-4" @click="sweetAlert">alert</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-6">
+                        <a href="#" class="text-light">
+                            <small>Forgot password?</small>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% include 'partials/login_footer.html' %}
+</div>
+
+<script>
+    axios.defaults.xsrfHeaderName = "X-CSRFToken";
+
+    new Vue({
+        el: '#appLogin',
+        delimiters: ["${", "}"],
+        data() {
+            return {
+                data: '1',
+            }
+        },
+        methods: {
+            sweetAlert: function () {
+                Swal.fire(
+                    'Good job!',
+                    'You clicked the button!',
+                    'success'
+                )
+            },
+            adminLogin: function (event) {
+                event.preventDefault();
+                let username = this.username;
+                let password = this.password;
+                {#let csrftoken = Cookies.get('csrftoken');#}
+                {#let headers = {X_CSRFTOKEN: csrftoken};#}
+                let formData = {username: username, password: password};
+                axios({
+                    method: 'POST',
+                    url: '/api/login/',
+                    data: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+                    },
+                }).then(
+                    response => {
+                        console.log(response.data);
+                        if (response.data.status === true) {
+                            Swal.fire({
+                                position: 'top-end',
+                                type: 'success',
+                                title: response.data.msg,
+                                showConfirmButton: false,
+                                timer: 1500
+                            });
+                            setTimeout(function () {
+                                window.location.href = '/'
+                            }, 1500)
+                        } else {
+                            Swal.fire({
+                                position: 'top-end',
+                                type: 'error',
+                                title: response.data.msg,
+                                showConfirmButton: false,
+                                timer: 1500
+                            })
+                        }
+                    }
+                );
+            }
+        }
+    })
+</script>
+</body>
+</html>

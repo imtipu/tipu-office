@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% block body_id %}{% endblock %}
+{% block main %}
+    {% include 'partials/blank_header.html' %}
+    <div class="container-fluid mt--7">
+        <!-- Dark table -->
+        <div class="row mt-5">
+            <div class="col">
+                <div class="card shadow">
+                    <div class="card-header border-0">
+                        <h3 class="float-sm-left mb-0">{{ title }}</h3>
+                        <a href="{% url 'add_employee' %}"
+                           class="btn btn-sm btn-outline-secondary text-white float-sm-right">Add New</a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table align-items-center">
+                            <thead class="">
+                            <tr>
+                                <th scope="col">Name</th>
+                                <th scope="col">Email</th>
+                                <th scope="col">Is Staff</th>
+                                <th scope="col">Is Admin</th>
+                                <th scope="col">City</th>
+                                <th scope="col">Country</th>
+                                <th scope="col">ZIP Code</th>
+                                <th scope="col">Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for foo in profiles %}
+                                <tr>
+                                    <th scope="row">
+                                        <a href="#"
+                                           class="text-dark">{{ foo.first_name }}&nbsp;{{ foo.last_name }}</a>
+                                    </th>
+                                    <td>
+                                        {{ foo.email }}
+                                    </td>
+                                    <td>
+                                        {{ foo.is_staff }}
+                                    </td>
+                                    <td>
+                                        {{ foo.is_superuser }}
+                                    </td>
+                                    <td>
+                                        {{ foo.profile.city }}
+                                    </td>
+                                    <td>
+                                        {{ foo.profile.country }}
+                                    </td>
+                                    <td>
+                                        {{ foo.profile.zip_code }}
+                                    </td>
+                                    <td>
+                                        <a onclick="getEditModal(this,event)" href="{% url 'employeeEditModal' foo.id %}"
+                                           class="btn btn-sm btn-info"><i class="fa fa-pencil"></i></a>
+                                        <a href="{% url 'attendence_list_user' foo.id %}"
+                                           class="btn btn-sm btn-dark"><i class="fa fa-eye"></i></a>
+                                        <button class="btn btn-sm btn-danger"><i class="fa fa-trash"></i></button>
+
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+<div id="modalUpdateUser" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-body">
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block js %}
+<script>
+function getEditModal(url,event) {
+    event.preventDefault();
+    $.get(url, function(data, status){
+        $('#modalUpdateUser .modal-body').html(data).modal('show');
+        $('#modalUpdateUser').modal('show');
+
+    });
+}
+</script>
+{% endblock %}

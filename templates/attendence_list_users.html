@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% load tags %}
+{% block body_id %}{% endblock %}
+{% block main %}
+    {% now 'd' as this_day %}
+    {% now 'm' as this_month %}
+    {% now 'Y' as this_year %}
+    {% include 'partials/blank_header.html' %}
+    <div class="container-fluid mt--7">
+        <!-- Dark table -->
+        <div class="row mt-5">
+            <div class="col-md-6 col-sm-10 col-xs-12">
+                <div class="card shadow">
+                    <div class="card-header border-0">
+                        <h3 class="float-sm-left mb-0">{{ title }} (Today: {% now 'd-M-Y' %})</h3>
+                        <a href="{% url 'add_employee' %}"
+                           class="btn btn-sm btn-primary float-sm-right">Add New Month</a>
+                    </div>
+
+                    <div class="table-responsive table-striped table-bordered">
+                        <table class="table align-items-center">
+                            <thead class="">
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">Employee Name</th>
+                                <th scope="col">Attendence</th>
+                                <th scope="col">Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+
+                            {% for foo in users %}
+                                {% get_today_attendence foo.id this_day this_month this_year as data %}
+                                <tr>
+                                    <td style="width: 1%">
+                                        {{ forloop.counter }}
+                                    </td>
+                                    <th scope="row">
+                                        <a href="#" class="text-dark">{{ foo.first_name }} {{ foo.last_name }}</a>
+                                    </th>
+                                    <td class="text-center" style="width: 1%">
+                                        {% if data.status %}
+                                            {% if data.status == True %}
+                                                <button type="button" class="badge badge-success">True</button>
+                                            {% else %}
+                                                <button type="button" class="badge badge-danger">False</button>
+                                            {% endif %}
+                                        {% else %}
+                                            <button id="btn_attend_{{ foo.id }}" type="button"
+                                                    onclick="attendSubmit(event,{{ foo.id }})" class="badge badge-info">
+                                                Attend
+                                            </button>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center" style="width: 1%;">
+                                        <a href="" rel="modal:open"
+                                           class="btn btn-sm btn-info"><i class="fa fa-pencil"></i></a>
+                                        <a href="{% url 'attendence_list_user' foo.id %}"
+                                           class="btn btn-sm btn-dark"><i class="fa fa-eye"></i></a>
+                                    </td>
+                                </tr>
+
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block js %}
+    <script>
+        function attendSubmit(event, id) {
+            event.preventDefault();
+            {#$('#btn_attend_'+id).removeClass('badge-info').addClass('badge-success');#}
+            let day = '{% now 'd' %}';
+            let month = '{% now 'm' %}';
+            let year = '{% now 'Y' %}';
+            $.ajax({
+                type: "post",
+                data: {user: id, day: day, month: month, year: year},
+                dataType: "json",
+                url: '{% url 'api_attendence_submit' %}',
+                beforeSend: function (xhr, settings) {
+                    xhr.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');
+                },
+                success: function (data) {
+                    console.log(data);
+                    if (data.status === true) {
+                        $('#btn_attend_' + id).removeClass('badge-info').addClass('badge-success').html('True');
+                    } else {
+                        alert(data.msg)
+                    }
+                }
+            });
+
+        }
+    </script>
+{% endblock %}
